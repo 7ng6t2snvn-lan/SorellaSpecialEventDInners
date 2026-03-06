@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Sorella Wine Dinner</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="login">
+<img src="assets/sorella-logo.jpg" class="logo">
+<input type="password" id="passcode" placeholder="Enter Passcode">
+<button onclick="unlock()">Enter</button>
+</div>
+
+<div id="app" class="hidden">
+
+<nav>
+<button onclick="showTab('prep')">Prep</button>
+<button onclick="showTab('kitchen')">Kitchen</button>
+<button onclick="showTab('timeline')">Timeline</button>
+<button onclick="showTab('menu')">Menu</button>
+<button onclick="showTab('foh')">FOH</button>
+<button onclick="showTab('docs')">Docs</button>
+</nav>
+
+<div id="content"></div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
