@@ -42,9 +42,11 @@
     position: fixed; inset: 0; z-index: 1000;
     background: var(--bg);
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 40px 24px;
+    align-items: center; justify-content: flex-start;
+    padding: env(safe-area-inset-top, 48px) 24px 40px;
+    padding-top: max(env(safe-area-inset-top), 48px);
     gap: 0;
+    overflow-y: auto;
   }
   .lock-logo {
     width: 220px;
