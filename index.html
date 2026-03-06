@@ -888,12 +888,30 @@
   </div>
 </div>
 
-<script>
-  // ── PIN LOGIC ──
-  const CORRECT_PIN = '0119';
-  let currentPin = '';
+<script type="module">
+  // ── FIREBASE ──
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, doc, setDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  function pressPin(val) {
+  const firebaseConfig = {
+    apiKey: "AIzaSyBCUlg8JTHDv9cGQ1j_OtbIIDOuleYf-04",
+    authDomain: "sorella-events.firebaseapp.com",
+    projectId: "sorella-events",
+    storageBucket: "sorella-events.firebasestorage.app",
+    messagingSenderId: "462508190799",
+    appId: "1:462508190799:web:7a22c6809559f015ddce3a",
+    measurementId: "G-HKW9F2KHY1"
+  };
+
+  const firebaseApp = initializeApp(firebaseConfig);
+  const db = getFirestore(firebaseApp);
+
+  // ── PIN LOGIC ──
+  const VALID_PINS = ['0119', '4055'];
+  let currentPin = '';
+  let isAdmin = false; // PIN 0119 = admin, 4055 = guest
+
+  window.pressPin = function(val) {
     if (val === 'clear') {
       currentPin = currentPin.slice(0, -1);
     } else {
@@ -915,9 +933,11 @@
   }
 
   function checkPin() {
-    if (currentPin === CORRECT_PIN) {
+    if (VALID_PINS.includes(currentPin)) {
+      isAdmin = (currentPin === '0119');
       document.getElementById('lock-screen').style.display = 'none';
       document.getElementById('app').classList.add('visible');
+      initFirebaseSync();
     } else {
       const dots = document.querySelectorAll('.pin-dot');
       dots.forEach(d => d.classList.add('error'));
@@ -931,7 +951,7 @@
     }
   }
 
-  function lockApp() {
+  window.lockApp = function() {
     currentPin = '';
     updateDots();
     document.getElementById('app').classList.remove('visible');
@@ -939,7 +959,7 @@
   }
 
   // ── TAB LOGIC ──
-  function switchTab(tab) {
+  window.switchTab = function(tab) {
     document.querySelectorAll('.tab-btn').forEach((b, i) => {
       const tabs = ['menu','service','kitchen','expo','prep','info'];
       b.classList.toggle('active', tabs[i] === tab);
@@ -948,8 +968,43 @@
     document.getElementById('panel-' + tab).classList.add('active');
   }
 
+  // ── FIREBASE SYNC ──
+  let remoteListening = false;
+
+  function initFirebaseSync() {
+    if (remoteListening) return;
+    remoteListening = true;
+
+    // Prep state — live sync
+    onSnapshot(doc(db, 'corsini', 'prep'), (snapshot) => {
+      const state = snapshot.exists() ? (snapshot.data().items || []) : [];
+      const items = document.querySelectorAll('.prep-item');
+      items.forEach((item, i) => {
+        item.classList.toggle('done', !!state[i]);
+      });
+      updatePrepProgress();
+    });
+
+    // Served state — live sync
+    onSnapshot(doc(db, 'corsini', 'served'), (snapshot) => {
+      const state = snapshot.exists() ? (snapshot.data() || {}) : {};
+      for (let i = 1; i <= 6; i++) {
+        const card = document.getElementById('menu-card-' + i);
+        if (!card) continue;
+        const btn = card.querySelector('.served-btn');
+        const shouldBeServed = !!state['c' + i];
+        const isServed = card.classList.contains('served-card');
+        if (shouldBeServed !== isServed) {
+          card.classList.toggle('served-card', shouldBeServed);
+          btn && btn.classList.toggle('served', shouldBeServed);
+        }
+      }
+    });
+  }
+
   // ── PREP LIST ──
-  function togglePrep(item) {
+  window.togglePrep = function(item) {
+    if (!isAdmin) return;
     item.classList.toggle('done');
     updatePrepProgress();
     savePrepState();
@@ -968,37 +1023,47 @@
   function savePrepState() {
     const items = document.querySelectorAll('.prep-item');
     const state = Array.from(items).map(i => i.classList.contains('done'));
+    // Save to Firestore
+    setDoc(doc(db, 'corsini', 'prep'), { items: state }).catch(e => console.warn('Firestore write failed:', e));
+    // Fallback localStorage
     try { localStorage.setItem('corsini_prep', JSON.stringify(state)); } catch(e){}
   }
 
-  function loadPrepState() {
+  // ── SERVED TOGGLE ──
+  window.toggleServed = function(num) {
+    if (!isAdmin) return;
+    const card = document.getElementById('menu-card-' + num);
+    const btn = card.querySelector('.served-btn');
+    const isServed = card.classList.toggle('served-card');
+    btn.classList.toggle('served', isServed);
+    // Save to Firestore
+    setDoc(doc(db, 'corsini', 'served'), { ['c' + num]: isServed }, { merge: true }).catch(e => console.warn('Firestore write failed:', e));
+    try { localStorage.setItem('corsini_served_' + num, isServed); } catch(e){}
+  }
+
+  // ── INIT (local fallback before Firebase connects) ──
+  function loadLocalFallback() {
     try {
       const state = JSON.parse(localStorage.getItem('corsini_prep') || '[]');
       const items = document.querySelectorAll('.prep-item');
       items.forEach((item, i) => { if (state[i]) item.classList.add('done'); });
     } catch(e){}
     updatePrepProgress();
-  }
-
-  // ── SERVED TOGGLE ──
-  function toggleServed(num) {
-    const card = document.getElementById('menu-card-' + num);
-    const btn = card.querySelector('.served-btn');
-    const isServed = card.classList.toggle('served-card');
-    btn.classList.toggle('served', isServed);
-    try { localStorage.setItem('corsini_served_' + num, isServed); } catch(e){}
-  }
-
-  function loadServedState() {
     for (let i = 1; i <= 6; i++) {
       try {
-        if (localStorage.getItem('corsini_served_' + i) === 'true') toggleServed(i);
+        if (localStorage.getItem('corsini_served_' + i) === 'true') {
+          const card = document.getElementById('menu-card-' + i);
+          if (card) {
+            card.classList.add('served-card');
+            const btn = card.querySelector('.served-btn');
+            if (btn) btn.classList.add('served');
+          }
+        }
       } catch(e){}
     }
   }
 
-  loadServedState();
-  loadPrepState();
+  loadLocalFallback();
 </script>
 </body>
 </html>
