@@ -249,6 +249,50 @@
     line-height: 1.5;
   }
 
+  /* ── COURSE TIMING + SERVED BUTTON ── */
+  .course-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .course-timing {
+    display: flex; gap: 14px;
+  }
+  .timing-badge {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .timing-badge span { color: var(--gold); font-weight: 500; }
+  .served-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .served-btn:active { transform: scale(0.96); }
+  .served-btn.served {
+    background: rgba(139,26,46,0.15);
+    border-color: var(--accent);
+    color: var(--accent-light);
+  }
+  .card.served-card {
+    opacity: 0.42;
+    filter: grayscale(0.5);
+    transition: opacity 0.4s, filter 0.4s;
+  }
+  .card.served-card .served-btn {
+    opacity: 1;
+    filter: none;
+  }
+
   /* ── TIMELINE ── */
   .timeline { position: relative; padding-left: 28px; }
   .timeline::before {
@@ -473,7 +517,14 @@
       <div class="section-title">Menu</div>
       <div class="section-sub">Five courses + wine pairings</div>
 
-      <div class="card">
+      <div class="card" id="menu-card-1">
+        <div class="course-meta-row">
+          <div class="course-timing">
+            <div class="timing-badge">🔥 <span>6:05</span></div>
+            <div class="timing-badge">🚶 <span>6:15</span></div>
+          </div>
+          <button class="served-btn" onclick="toggleServed(1)">✓ Served</button>
+        </div>
         <div class="course-num">Course 1</div>
         <div class="course-name">Carpaccio di Tonno</div>
         <div class="course-desc">Albacore tuna · Agrumato lemon oil · Preserved lemon · Maldon sea salt · Garlic chips · Chervil</div>
@@ -483,7 +534,14 @@
         <div class="wine-notes">Arneis, Chardonnay & Sauvignon Blanc · Monforte d'Alba · Fresh structure, clean mineral finish</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="menu-card-2">
+        <div class="course-meta-row">
+          <div class="course-timing">
+            <div class="timing-badge">🔥 <span>6:35</span></div>
+            <div class="timing-badge">🚶 <span>6:45</span></div>
+          </div>
+          <button class="served-btn" onclick="toggleServed(2)">✓ Served</button>
+        </div>
         <div class="course-num">Course 2</div>
         <div class="course-name">Merluzzo Nero</div>
         <div class="course-desc">Charcoal grilled Black Cod · Fennel · Brown butter</div>
@@ -493,7 +551,14 @@
         <div class="wine-notes">Monforte d'Alba · Stone fruit, floral notes, fresh balanced finish</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="menu-card-3">
+        <div class="course-meta-row">
+          <div class="course-timing">
+            <div class="timing-badge">🔥 <span>7:05</span></div>
+            <div class="timing-badge">🚶 <span>7:15</span></div>
+          </div>
+          <button class="served-btn" onclick="toggleServed(3)">✓ Served</button>
+        </div>
         <div class="course-num">Course 3</div>
         <div class="course-name">Tajarin al Ragù Bianco</div>
         <div class="course-desc">Hand-rolled egg yolk pasta · White veal ragù · Parmigiano Reggiano</div>
@@ -503,7 +568,14 @@
         <div class="wine-notes">Monforte d'Alba · Red berry fruit, spice, firm structure</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="menu-card-4">
+        <div class="course-meta-row">
+          <div class="course-timing">
+            <div class="timing-badge">🔥 <span>7:30</span></div>
+            <div class="timing-badge">🚶 <span>7:45</span></div>
+          </div>
+          <button class="served-btn" onclick="toggleServed(4)">✓ Served</button>
+        </div>
         <div class="course-num">Course 4</div>
         <div class="course-name">Piccione Arrosto</div>
         <div class="course-desc">Squab · Treviso · Amarena cherry · Squab jus</div>
@@ -513,7 +585,14 @@
         <div class="wine-notes">Monforte d'Alba · Dark cherry, plum, bright acidity, smooth finish</div>
       </div>
 
-      <div class="card">
+      <div class="card" id="menu-card-5">
+        <div class="course-meta-row">
+          <div class="course-timing">
+            <div class="timing-badge">🔥 <span>8:05</span></div>
+            <div class="timing-badge">🚶 <span>8:15</span></div>
+          </div>
+          <button class="served-btn" onclick="toggleServed(5)">✓ Served</button>
+        </div>
         <div class="course-num">Course 5</div>
         <div class="course-name">Guancia di Maiale</div>
         <div class="course-desc">Pork cheeks · Polenta concia · Royal trumpet mushroom · Pork jus</div>
@@ -523,7 +602,11 @@
         <div class="wine-notes">Monforte d'Alba · Red cherry, rose, earthy notes, structured tannins</div>
       </div>
 
-      <div class="card" style="border-color: var(--gold-dim); background: linear-gradient(135deg, var(--surface2), var(--surface));">
+      <div class="card" id="menu-card-6" style="border-color: var(--gold-dim); background: linear-gradient(135deg, var(--surface2), var(--surface));">
+        <div class="course-meta-row">
+          <div class="course-timing"></div>
+          <button class="served-btn" onclick="toggleServed(6)">✓ Served</button>
+        </div>
         <div class="course-num" style="color: var(--gold);">Bonus Course</div>
         <div class="course-name">Toma Cheese</div>
         <div class="course-desc">Toma · Olive oil fried almonds · Honey</div>
@@ -895,6 +978,24 @@
     updatePrepProgress();
   }
 
+  // ── SERVED TOGGLE ──
+  function toggleServed(num) {
+    const card = document.getElementById('menu-card-' + num);
+    const btn = card.querySelector('.served-btn');
+    const isServed = card.classList.toggle('served-card');
+    btn.classList.toggle('served', isServed);
+    try { localStorage.setItem('corsini_served_' + num, isServed); } catch(e){}
+  }
+
+  function loadServedState() {
+    for (let i = 1; i <= 6; i++) {
+      try {
+        if (localStorage.getItem('corsini_served_' + i) === 'true') toggleServed(i);
+      } catch(e){}
+    }
+  }
+
+  loadServedState();
   loadPrepState();
 </script>
 </body>
